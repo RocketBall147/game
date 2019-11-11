@@ -11,8 +11,8 @@ app.use(express.static('.'));
 const Game = {
     minX: 0,
     minY: 0,
-    maxX: 640,
-    maxY: 480,
+    maxX: 640 * 2,
+    maxY: 480 * 2,
     users: []
 };
 io.on('connection', function (socket) {
@@ -21,18 +21,20 @@ io.on('connection', function (socket) {
         y: 20,
         socket: socket
     });
+
     socket.on('direction', function (data) {
         if (data){
         Game.users.forEach(user => {
             if (user.socket.id == socket.id) {
-                if (data.includes('up')) user.y -= 5;
-                if (data.includes('down')) user.y += 5;
-                if (data.includes('left')) user.x -= 5;
-                if (data.includes('right')) user.x += 5;
+                if (data.includes('up')) user.y -= 2;
+                if (data.includes('down')) user.y += 2;
+                if (data.includes('left')) user.x -= 2;
+                if (data.includes('right')) user.x += 2;
             }
         })
     };
     });
+
     
 });
 
@@ -46,4 +48,4 @@ setInterval(function () {
             }
         }));
     });
-}, 16)
+}, 1000/128)

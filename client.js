@@ -1,11 +1,12 @@
 const socket = io.connect('http://157.230.18.240:8000');
 let gameScene = new Phaser.Scene('Game');
 
-const SCENE_WIDTH = 640;
-const SCENE_HEIGHT = 480;
+const SCENE_WIDTH = 640  *2;
+const SCENE_HEIGHT = 480 * 2;
 const DIST = 2;
 const SPEED = 1;
 let KEYS = undefined;
+let img;
 
 players = [];
 
@@ -32,16 +33,14 @@ gameScene.preload = function () {
         left: 'A',
         right: 'D',
     });
-
-    this.add.rectangle(SCENE_WIDTH / 2, SCENE_HEIGHT / 2, SCENE_WIDTH, SCENE_HEIGHT, '0x009500');
-
-    // for (let i = 0; i < 1; i++) {
-    //     players.push(new Player(this, SCENE_WIDTH * Math.random(), SCENE_HEIGHT * Math.random(), 16, '0xffffff', 1));
-    // }
+    this.load.svg('footballfield', '/sprites/pole.svg', {width:SCENE_WIDTH+100, height: SCENE_HEIGHT + 100 });
+    this.load.svg('goal', '/sprites/vorota.svg');
 };
 
 gameScene.create = function () {
-    setInterval(() => {
+	this.add.image(0, 0, 'footballfield').setOrigin(0);
+	this.add.image(50, 50, 'goal');
+  setInterval(() => {
         let key = [];
 
         if (KEYS.up.isDown) {
@@ -55,36 +54,23 @@ gameScene.create = function () {
         };
         
         socket.emit("direction", key);
-    }, 1000 / 30);
+    }, 1000 / 128);
 };
 
 gameScene.update = function () {
-    // players.forEach(player => {
-    //     let key = undefined;
-    //     // if (KEYS.up.isDown) {
-    //     //     key = 'up';
-    //     // } else if (KEYS.down.isDown) {
-    //     //     key = 'down';
-    //     // } else if (KEYS.left.isDown) {
-    //     //     key = 'left';
-    //     // } else if (KEYS.right.isDown) {
-    //     //     key = 'right';
-    //     // }
-    //     player.update(key);
-    // });
+   
 };
 
 let config = {
     type: Phaser.AUTO, //Phaser will decide how to render our game (WebGL or Canvas)
-    width: 640, // game width
-    height: 480, // game height
+    width: SCENE_WIDTH, // game width
+    height: SCENE_HEIGHT, // game height
     scene: gameScene, // our newly created scene
 };
 
 const game = new Phaser.Game(config);
 
 socket.on('position', function (users) {
-    console.log(users)
     users.forEach(user => {
         const playerIndex = players.findIndex((player => user.id === player.id));
 
