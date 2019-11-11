@@ -14,26 +14,18 @@ const Game = {
     minY: 0,
     maxX: config.SCENE_WIDTH,
     maxY: config.SCENE_HEIGHT,
-    maxVelocity: 6,
+    maxVelocity: 3,
     minVelocity: 0,
-    acceleration: 1,
+    acceleration: 0.5,
     users: [],
 };
 
 const calculateSpeed = (dir, acceleration, speed) => {
-    if (dir < 0) {
-        return (speed - acceleration < -Game.maxVelocity) ? -Game.maxVelocity : speed - acceleration;
-    } else {
-        return (speed + acceleration > Game.maxVelocity) ? Game.maxVelocity : speed + acceleration;
-    }
+    return (dir < 0) ? (speed - acceleration < -Game.maxVelocity) ? -Game.maxVelocity : speed - acceleration : (speed + acceleration > Game.maxVelocity) ? Game.maxVelocity : speed + acceleration;
 }
 
 const calculateStopSpeed = (dir, acceleration, speed) => {
-    if (dir < 0) {
-        return (speed - acceleration < 0) ? 0 : speed - acceleration;
-    } else {
-        return (speed + acceleration > 0) ? 0 : speed + acceleration;
-    }
+    return (dir < 0) ? (speed - acceleration < 0) ? 0 : speed - acceleration : (speed + acceleration > 0) ? 0 : speed + acceleration;
 }
 
 io.on('connection', function (socket) {
@@ -52,48 +44,22 @@ io.on('connection', function (socket) {
         if (data) {
             Game.users.forEach(user => {
                 if (user.socket.id == socket.id) {
-                    if (data.includes('up') || data.includes('down')) {
-                        if (data.includes('up')) {
-                            const speed = calculateSpeed(-1, Game.acceleration / 4, user.speed.y);
-                            user.speed.y = speed;
-                            user.y += user.speed.y;
-                        }
-
-                        if (data.includes('down')) {
-                            const speed = calculateSpeed(1, Game.acceleration / 4, user.speed.y);
-                            user.speed.y = speed;
-                            user.y += user.speed.y;
-                        }
-                    } else {
-                        if (user.speed.y > 0) {
-                            user.speed.y = calculateStopSpeed(-1, Game.acceleration / 4, user.speed.y);
-                            user.y += user.speed.y;
-                        } else if (user.speed.y < 0) {
-                            user.speed.y = calculateStopSpeed(1, Game.acceleration / 4, user.speed.y);
-                            user.y += user.speed.y;
-                        }
+                    if (data.includes('up') && data.includes('down') || !data.includes('up') && !data.includes('down')) {
+                        if (user.speed.y > 0) user.speed.y = calculateStopSpeed(-1, Game.acceleration / 5, user.speed.y);
+                        else if (user.speed.y < 0) user.speed.y = calculateStopSpeed(1, Game.acceleration / 5, user.speed.y);
+                        user.y += user.speed.y;
+                    } else if (data.includes('up') || data.includes('down')) {
+                        user.speed.y = calculateSpeed(data.includes('up') ? -1 : 1, Game.acceleration / 5, user.speed.y);
+                        user.y += user.speed.y;
                     }
 
-                    if (data.includes('left') || data.includes('right')) {
-                        if (data.includes('left')) {
-                            const speed = calculateSpeed(-1, Game.acceleration / 4, user.speed.x);
-                            user.speed.x = speed;
-                            user.x += user.speed.x;
-                        }
-
-                        if (data.includes('right')) {
-                            const speed = calculateSpeed(1, Game.acceleration / 4, user.speed.x);
-                            user.speed.x = speed;
-                            user.x += user.speed.x;
-                        }
-                    } else {
-                        if (user.speed.x > 0) {
-                            user.speed.x = calculateStopSpeed(-1, Game.acceleration / 4, user.speed.x);
-                            user.x += user.speed.x;
-                        } else if (user.speed.x < 0) {
-                            user.speed.x = calculateStopSpeed(1, Game.acceleration / 4, user.speed.x);
-                            user.x += user.speed.x;
-                        }
+                    if (data.includes('left') && data.includes('right') || !data.includes('left') && !data.includes('right')) {
+                        if (user.speed.x > 0) user.speed.x = calculateStopSpeed(-1, Game.acceleration / 5, user.speed.x);
+                        else if (user.speed.x < 0) user.speed.x = calculateStopSpeed(1, Game.acceleration / 5, user.speed.x);
+                        user.x += user.speed.x;
+                    } else if (data.includes('left') || data.includes('right')) {
+                        user.speed.x = calculateSpeed(data.includes('left') ? -1 : 1, Game.acceleration / 5, user.speed.x);
+                        user.x += user.speed.x;
                     }
 
                     if (data.includes('kick')) {
