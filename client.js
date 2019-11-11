@@ -1,20 +1,17 @@
-const socket = io.connect('http://157.230.18.240:8000');
-let gameScene = new Phaser.Scene('Game');
+const SCENE_WIDTH = 640;
+const SCENE_HEIGHT = 480;
 
-const SCENE_WIDTH = 640  *2;
-const SCENE_HEIGHT = 480 * 2;
-const DIST = 2;
-const SPEED = 1;
-let KEYS = undefined;
-let img;
+const socket = io.connect('http://localhost:8000');
+let gameScene = new Phaser.Scene('Game');
 
 players = [];
 
 class Player extends Phaser.GameObjects.Arc {
     constructor(scene, x, y, id) {
-        super(scene, x, y, 16, 0, 360, false, "0xffffff", 1);
-        this.setStrokeStyle(2, '0x000000', 1);
+        super(scene, x, y, 16, 0, 360, false, '0xffffff', 1);
+        this.setStrokeStyle(3, '0x000000', 1);
         this.id = id;
+        this.setDepth(1);
         scene.add.existing(this);
     }
 
@@ -26,60 +23,78 @@ class Player extends Phaser.GameObjects.Arc {
     // preUpdate(time, delta) {}
 }
 
-gameScene.preload = function () {
+gameScene.preload = function() {
     KEYS = this.input.keyboard.addKeys({
         up: 'W',
         down: 'S',
         left: 'A',
         right: 'D',
     });
-    this.load.svg('footballfield', '/sprites/pole.svg', {width:SCENE_WIDTH+100, height: SCENE_HEIGHT + 100 });
-    this.load.svg('goal', '/sprites/vorota.svg');
+    this.load.svg('footballfield', '/sprites/pole.svg', { width: SCENE_WIDTH, height: SCENE_HEIGHT });
+    this.load.svg('goal', '/sprites/vorota-01.svg', { width: SCENE_WIDTH / 2, height: SCENE_HEIGHT / 2 });
+
+    players = this.add.group({
+        classType: Phaser.GameObjects.Arc,
+        active: true,
+        maxSize: -1,
+        runChildUpdate: false,
+    });
 };
 
-gameScene.create = function () {
-	this.add.image(0, 0, 'footballfield').setOrigin(0);
-	this.add.image(50, 50, 'goal');
-  setInterval(() => {
+gameScene.create = function() {
+    const field = this.add.image(-1, -49, 'footballfield').setOrigin(0);
+    const goalLeft = this.add.image(24, SCENE_HEIGHT / 2, 'goal');
+    const goalRight = this.add.image(SCENE_WIDTH - 24, SCENE_HEIGHT / 2, 'goal');
+    goalRight.angle = 180;
+
+    field.displayHeight = 700;
+    setInterval(() => {
         let key = [];
 
         if (KEYS.up.isDown) {
             key.push('up');
-        } if (KEYS.down.isDown) {
+        }
+        if (KEYS.down.isDown) {
             key.push('down');
-        } if (KEYS.left.isDown) {
+        }
+        if (KEYS.left.isDown) {
             key.push('left');
-        } if (KEYS.right.isDown) {
+        }
+        if (KEYS.right.isDown) {
             key.push('right');
-        };
-        
-        socket.emit("direction", key);
-    }, 1000 / 128);
+        }
+
+        socket.emit('direction', key);
+    }, 1000 / 60);
 };
 
-gameScene.update = function () {
-   
-};
+gameScene.update = function() {};
 
 let config = {
-    type: Phaser.AUTO, //Phaser will decide how to render our game (WebGL or Canvas)
-    width: SCENE_WIDTH, // game width
-    height: SCENE_HEIGHT, // game height
-    scene: gameScene, // our newly created scene
+    type: Phaser.AUTO,
+    width: SCENE_WIDTH,
+    height: SCENE_HEIGHT,
+    scene: gameScene,
 };
 
 const game = new Phaser.Game(config);
 
-socket.on('position', function (users) {
-    users.forEach(user => {
-        const playerIndex = players.findIndex((player => user.id === player.id));
+socket.on('position', function(users) {
+    const plCopy = players.getChildren().slice();
+    plCopy.forEach(player =>
+        users.findIndex(user => user.id === player.id) === -1 ? players.killAndHide(player) : undefined,
+    );
 
+    users.forEach(user => {
+        const playerIndex = players.getChildren().findIndex(player => user.id === player.id);
         if (playerIndex !== -1) {
-            players[playerIndex].update(user.x, user.y);
+            players.getChildren()[playerIndex].update(user.x, user.y);
         } else {
-            const newPlayer = new Player(gameScene, user.x, user.y, user.id);
-            players.push(newPlayer);
+            players.add(new Player(gameScene, user.x, user.y, user.id));
         }
-    })
+    });
 });
 
+socket.on('destroy', userID => {
+    gameScene.children.list.splice(gameScene.children.list.findIndex(child => child.id === userID), 1);
+});
