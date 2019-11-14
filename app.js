@@ -3,7 +3,10 @@ const app = require('express')();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 
-server.listen(8000, 'localhost');
+server.listen(8000, 'localhost', () => {
+    console.log('Listening');
+});
+
 // WARNING: app.listen(80) will NOT work here!
 app.use(express.static('.'));
 
