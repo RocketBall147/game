@@ -1,10 +1,11 @@
 const SCENE_WIDTH = 640;
 const SCENE_HEIGHT = 480;
 
-const socket = io.connect('http://localhost:8000');
+const socket = io.connect('http://192.168.43.25:8000');
 let gameScene = new Phaser.Scene('Game');
 
 players = [];
+let ball = undefined;
 
 class Player extends Phaser.GameObjects.Arc {
     constructor(scene, x, y, id) {
@@ -20,6 +21,22 @@ class Player extends Phaser.GameObjects.Arc {
         this.x = x;
         this.y = y;
         this.strokeColor = (kick) ? '0xcccccc' : '0x000000';
+    }
+
+    // preUpdate(time, delta) {}
+}
+
+class Ball extends Phaser.GameObjects.Arc {
+    constructor(scene, x, y) {
+        super(scene, x, y, 10, 0, 360, false, '0xffffff', 1);
+        this.setStrokeStyle(2, '0x000000', 1);
+        this.setDepth(1);
+        scene.add.existing(this);
+    }
+
+    update(x, y, kick) {
+        this.x = x;
+        this.y = y;
     }
 
     // preUpdate(time, delta) {}
@@ -42,6 +59,8 @@ gameScene.preload = function () {
         maxSize: -1,
         runChildUpdate: false,
     });
+
+    ball = new Ball(this, 320, 240);
 };
 
 gameScene.create = function () {
@@ -80,13 +99,13 @@ let config = {
 
 const game = new Phaser.Game(config);
 
-socket.on('position', function (users) {
+socket.on('position', function (data) {
     const plCopy = players.getChildren().slice();
     plCopy.forEach(player =>
-        users.findIndex(user => user.id === player.id) === -1 ? players.killAndHide(player) : undefined,
+        data.users.findIndex(user => user.id === player.id) === -1 ? players.killAndHide(player) : undefined,
     );
 
-    users.forEach(user => {
+    data.users.forEach(user => {
         const playerIndex = players.getChildren().findIndex(player => user.id === player.id);
         if (playerIndex !== -1) {
             players.getChildren()[playerIndex].update(user.x, user.y, user.kick);
