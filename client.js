@@ -33,7 +33,7 @@ gameScene.preload = function () {
         right: 'D',
         kick: 'SPACE'
     });
-    this.load.svg('footballfield', '/sprites/pole.svg', { width: SCENE_WIDTH, height: SCENE_HEIGHT });
+    this.load.svg('footballfield', '/sprites/pole.svg', { width: SCENE_WIDTH * 3, height: SCENE_HEIGHT * 3 });
     this.load.svg('goal', '/sprites/vorota-01.svg', { width: SCENE_WIDTH / 2, height: SCENE_HEIGHT / 2 });
 
     players = this.add.group({
@@ -45,32 +45,27 @@ gameScene.preload = function () {
 };
 
 gameScene.create = function () {
-    const field = this.add.image(-1, -49, 'footballfield').setOrigin(0);
+    const field = this.add.image(-1, -49, 'footballfield');
     const goalLeft = this.add.image(24, SCENE_HEIGHT / 2, 'goal');
     const goalRight = this.add.image(SCENE_WIDTH - 24, SCENE_HEIGHT / 2, 'goal');
     goalRight.angle = 180;
 
-    field.displayHeight = 700;
     setInterval(() => {
-        let key = [];
-
-        if (KEYS.up.isDown) {
-            key.push('up');
-        }
-        if (KEYS.down.isDown) {
-            key.push('down');
-        }
-        if (KEYS.left.isDown) {
-            key.push('left');
-        }
-        if (KEYS.right.isDown) {
-            key.push('right');
-        }
-        if (KEYS.kick.isDown) {
-            key.push('kick');
+        const keys = {
+            up: false,
+            down: false,
+            left: false,
+            right: false,
+            kick: false
         }
 
-        socket.emit('direction', key);
+        if (KEYS.up.isDown) keys.up = true;
+        if (KEYS.down.isDown) keys.down = true;
+        if (KEYS.left.isDown) keys.left = true;
+        if (KEYS.right.isDown) keys.right = true;
+        if (KEYS.kick.isDown) keys.kick = true;
+
+        socket.emit('direction', keys);
     }, 1000 / 60);
 };
 
