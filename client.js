@@ -1,7 +1,7 @@
 const SCENE_WIDTH = 640;
 const SCENE_HEIGHT = 480;
 
-const socket = io.connect('http://192.168.43.25:8000');
+const socket = io.connect('http://172.16.98.171:8000');
 let gameScene = new Phaser.Scene('Game');
 
 players = [];
@@ -113,6 +113,8 @@ socket.on('position', function (data) {
             players.add(new Player(gameScene, user.x, user.y, user.id));
         }
     });
+
+    ball.update(data.ball.x, data.ball.y);
 });
 
 socket.on('destroy', userID => {
