@@ -1,0 +1,73 @@
+    html {
+        overflow: hidden;
+    }
+    
+    @font-face {
+        font-family: Hanging;
+        /* Гарнитура шрифта */
+        src: url(../fonts/Hanging.ttf);
+        /* Путь к файлу со шрифтом */
+    }
+    
+    body {
+        background-color: #87EA39;
+    }
+    
+    .divBlockBack {
+        flex: 0 0 auto;
+    }
+    
+    .logo {
+        position: fixed;
+        z-index: 100;
+        font-family: Hanging;
+        font-size: 128px;
+        outline: none;
+        -webkit-touch-callout: none;
+        /* iOS Safari */
+        -webkit-user-select: none;
+        /* Chrome/Safari/Opera */
+        -khtml-user-select: none;
+        /* Konqueror */
+        -moz-user-select: none;
+        /* Firefox */
+        -ms-user-select: none;
+        /* Internet Explorer/Edge */
+        user-select: none;
+    }
+    
+    .divBlockBack img {
+        pointer-events: none;
+        height: -webkit-fill-available;
+    }
+    
+    .settings {
+        position: fixed;
+        /* Фиксированное положение */
+        left: 0;
+        bottom: 0;
+        /* Левый нижний угол */
+        padding: 10px;
+        /* Цвет текста */
+        width: 100%;
+        /* Ширина слоя */
+        font-size: 48px;
+    }
+    
+    .playgamebutton {
+        top: 20%;
+        width: 336px;
+        height: 60px;
+        border-radius: 12.81px;
+        background: linear-gradient(rgba(0, 255, 0, 0.2) 0%, rgba(0, 255, 0, 0.7) 100%);
+        border: 5px solid #000;
+        font-size: 50px;
+        font-weight: bold;
+        line-height: 0px;
+        position: fixed;
+        text-align: center;
+        color: #000;
+        z-index: 1000;
+        outline: none;
+        cursor: pointer;
+    }
